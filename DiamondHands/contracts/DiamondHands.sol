@@ -6,6 +6,7 @@ import "hardhat/console.sol";
 struct LockedUntil {
     uint256 until;
     uint256 value;
+    bool claimed;
 }
 
 contract DiamondHands {
@@ -16,42 +17,32 @@ contract DiamondHands {
     }
 
     receive() external payable {
-        console.log(
-            "Received %s, locking until %s",
-            msg.value,
-            block.timestamp
-        );
-
         lockedUntil[msg.sender].push(
-            LockedUntil(block.timestamp + 712 days, msg.value)
+            LockedUntil(block.timestamp + 712 days, msg.value, false)
         );
     }
 
     function withdraw() external returns (uint256) {
-        LockedUntil[] memory currentUserData = lockedUntil[msg.sender];
+        LockedUntil[] storage currentUserData = lockedUntil[msg.sender];
 
         uint256 etherToWithdraw = 0;
 
         for (uint256 i = 0; i < currentUserData.length; i++) {
-            if (block.timestamp > currentUserData[i].until) {
-                etherToWithdraw += currentUserData[i].value;
-            } else {
+            if (
+                block.timestamp >= currentUserData[i].until &&
+                currentUserData[i].claimed == false
+            ) {
                 console.log(
-                    "You can withdraw %s ether in %s",
-                    currentUserData[i].value,
-                    block.timestamp - currentUserData[i].until
+                    block.timestamp,
+                    currentUserData[i].until,
+                    currentUserData[i].claimed
                 );
+                etherToWithdraw += currentUserData[i].value;
+                currentUserData[i].claimed = true;
             }
         }
 
-        if (etherToWithdraw == 0) {
-            console.log("No ether to withdraw!");
-        } else {
-            console.log(
-                "Transfering %s ether to %s",
-                etherToWithdraw,
-                msg.sender
-            );
+        if (etherToWithdraw != 0) {
             msg.sender.call{value: etherToWithdraw}("");
         }
 

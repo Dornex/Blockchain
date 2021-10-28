@@ -31,16 +31,28 @@ describe("DiamondHands", function () {
     );
   });
 
-  it("should deposit 1 ether, skip 2 years, and withdraw 1 ether", async function() {
+  it("should deposit 1 ether, skip 2 years, and withdraw 1 ether", async function () {
     [owner] = await ethers.getSigners();
 
-    const ownerBalance = (await provider.getBalance(owner.address)).toString();
-    
     await owner.sendTransaction({
       to: diamondHands.address,
       value: ethers.utils.parseEther("1.0"),
     });
 
-    expect(ownerBalance).to.equal((await provider.getBalance(owner.address)).toString())
+    await owner.sendTransaction({
+      to: diamondHands.address,
+      value: ethers.utils.parseEther("1.0"),
+    });
+
+    await ethers.provider.send("evm_increaseTime", [twoYears]);
+    await ethers.provider.send("evm_mine");
+
+    await owner.sendTransaction({
+      to: diamondHands.address,
+      value: ethers.utils.parseEther("1.0"),
+    });
+
+    await diamondHands.connect(owner).withdraw();
+    await diamondHands.connect(owner).withdraw();
   });
 });
