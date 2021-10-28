@@ -32,11 +32,6 @@ contract DiamondHands {
                 block.timestamp >= currentUserData[i].until &&
                 currentUserData[i].claimed == false
             ) {
-                console.log(
-                    block.timestamp,
-                    currentUserData[i].until,
-                    currentUserData[i].claimed
-                );
                 etherToWithdraw += currentUserData[i].value;
                 currentUserData[i].claimed = true;
             }
