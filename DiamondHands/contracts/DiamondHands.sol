@@ -11,17 +11,20 @@ struct LockedUntil {
 
 contract DiamondHands {
     mapping(address => LockedUntil[]) public lockedUntil;
-    address payable owner;
-    uint256 fee;
-    uint256 totalFee;
+    address payable public owner;
+    // 1 means 1% fee
+    uint256 public fee;
+    uint256 public totalFee;
 
     receive() external payable {
-        totalFee = totalFee + (fee * msg.value) / 100;
+        uint256 currentFee = (fee * msg.value) / 100;
+
+        totalFee += currentFee;
 
         lockedUntil[msg.sender].push(
             LockedUntil(
                 block.timestamp + 712 days,
-                msg.value - (fee * msg.value) / 100,
+                msg.value - currentFee,
                 false
             )
         );
@@ -49,6 +52,10 @@ contract DiamondHands {
             "Fee percent is not between 0% and 50%"
         );
         fee = _fee;
+    }
+
+    function getFee() external view returns (uint256) {
+        return fee;
     }
 
     function withdrawFee()

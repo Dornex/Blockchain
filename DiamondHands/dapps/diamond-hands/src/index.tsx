@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { Web3ReactProvider } from "@web3-react/core";
+import { Web3ReactProvider, createWeb3ReactRoot } from "@web3-react/core";
 import Web3 from "web3";
 import { provider } from "web3-core";
 import "bootstrap/dist/css/bootstrap.css";
@@ -12,9 +12,13 @@ function getLibrary(provider: provider) {
   return new Web3(provider);
 }
 
+const Web3ReactProviderReloaded = createWeb3ReactRoot("anotherOne");
+
 ReactDOM.render(
   <Web3ReactProvider getLibrary={getLibrary}>
-    <App />
+    <Web3ReactProviderReloaded getLibrary={getLibrary}>
+      <App />
+    </Web3ReactProviderReloaded>
   </Web3ReactProvider>,
   document.getElementById("root")
 );
